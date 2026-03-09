@@ -59,17 +59,45 @@ L'architecture suit les principes **SOLID** et **Clean Code** :
 ### 1.1 Analyse et stratégie CI/CD
 *   **Stratégie de branches :** GitHub Flow (main pour la prod, branches de feature).
 *   **Déclencheurs :** Push sur `main` et `develop`, Pull Requests vers `main`.
-*   **Étapes du pipeline :**
-    1.  **Build** : Compilation du code.
-    2.  **Lint** : Vérification du style de code.
-    3.  **Tests unitaires** : Validation fonctionnelle atomique.
-    4.  **Analyse SonarQube** : Qualité de code et couverture.
-    5.  **Scan de sécurité** : Scan de vulnérabilités (Snyk/Trivy).
-    6.  **Build Docker** : Création de l'image conteneurisée.
-    7.  **Déploiement** : Push vers le registre.
+*   **Schéma conceptuel des interactions :**
+    1.  Le développeur pousse le code sur le repository.
+    2.  Le serveur de CI (GitHub Actions) détecte le push et déclenche le runner.
+    3.  Le runner télécharge les dépendances, compile et exécute les tests.
+    4.  Le runner envoie les résultats à SonarQube pour analyse.
+    5.  Si les tests et la qualité sont validés, l'image Docker est construite et poussée.
+
+### 1.2 Définition des étapes CI
+Le rôle de chaque étape est crucial pour garantir :
+*   **Maintenabilité :** Le "Lint" et "SonarQube" assurent une base de code propre et lisible, facilitant les évolutions futures.
+*   **Traçabilité et observabilité :** Chaque exécution génère des logs et des rapports (Tests, Sécurité, Qualité) permettant d'identifier précisément l'origine d'un problème.
+
+**Étapes du pipeline :**
+1.  **Build** : Compilation du code pour vérifier la cohérence syntaxique.
+2.  **Lint** : Vérification du style de code (Checkstyle/ESLint).
+3.  **Tests unitaires** : Validation du comportement individuel des méthodes.
+4.  **Analyse SonarQube** : Mesure de la dette technique et couverture.
+5.  **Scan de sécurité** : Détection de vulnérabilités (CVE) dans les librairies.
+6.  **Build Docker** : Création d'un artefact immuable pour le déploiement.
+7.  **Déploiement** : Mise à disposition de l'application sur l'environnement cible.
 
 ## QUESTION 4 - IMPLÉMENTATION DU PIPELINE
-Le pipeline est configuré dans `.github/workflows/main.yml`. Il assure l'automatisation complète sans intervention manuelle, intégrant SonarQube pour la détection de bugs et la dette technique, ainsi que des scans DevSecOps pour la sécurité des dépendances.
+Le pipeline est configuré dans `.github/workflows/main.yml`.
+
+### 4.3 Guide d'utilisation et de maintenance
+*   **Comment exécuter le pipeline :** Automatiquement à chaque `push`. Manuellement via l'onglet "Actions" sous GitHub.
+*   **Comment corriger un échec :** 
+    1.  Consulter les logs de l'étape en rouge dans GitHub Actions.
+    2.  Si c'est un test : Corriger le code et repousser.
+    3.  Si c'est une dépendance manquante : Vérifier le `pom.xml`.
+*   **Comment interpréter les rapports SonarQube :**
+    -   **Bugs** : Erreurs logiques à corriger immédiatement.
+    -   **Vulnerabilities** : Failles de sécurité potentielles.
+    -   **Code Smells** : Problèmes de maintenabilité (à améliorer).
+    -   **Coverage** : Doit être > 60% (critère d'évaluation).
+*   **Comment corriger une vulnérabilité détectée :**
+    -   Identifier la librairie vulnérable via le rapport (Trivy ou Dependency-check).
+    -   Mettre à jour la version de la dépendance dans le `pom.xml`.
+    -   Relancer le pipeline pour validation.
 
 ## QUESTION 5 - DÉPLOIEMENT AUTOMATIQUE
 Mise en place d'un `Dockerfile` multi-stage pour optimiser la taille de l'image et d'un `docker-compose.yml` pour orchestrer l'application avec sa base de données PostgreSQL et SonarQube.
