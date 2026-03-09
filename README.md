@@ -1,5 +1,7 @@
 # Projet DeployFast - API Task Manager & Pipeline CI/CD
 
+**Lien du dépôt GitHub :** [https://github.com/youessah/DeployFast](https://github.com/youessah/DeployFast)
+
 Ce projet est une implémentation technique pour l'examen pratique de DevOps Engineer (Février-Mars 2026). Il démontre la mise en place d'une application REST conteneurisée avec un pipeline d'automatisation complet.
 
 ---
